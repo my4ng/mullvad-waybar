@@ -134,12 +134,23 @@ impl<'j> Status<'j> {
         }
     }
 
+    fn tooltip_title(&self) -> &'static str {
+        match self {
+            Self::Offline => "<b>OFFLINE</b>",
+            Self::Disconnected { lockdown, .. } | Self::Connected { lockdown, .. } => {
+                if *lockdown {
+                    "<b>LOCKDOWN MODE: ON</b>"
+                } else {
+                    "<b>LOCKDOWN MODE: OFF</b>"
+                }
+            }
+        }
+    }
+
     fn tooltip(&self) -> String {
         match self {
-            Self::Offline => "<b>OFFLINE</b>".into(),
-            Self::Disconnected { lockdown, .. } => format!("<b>LOCKDOWN: {lockdown}</b>"),
+            Self::Offline | Self::Disconnected { .. } => self.tooltip_title().into(),
             Self::Connected {
-                lockdown,
                 tunnel_type,
                 tunnel_interface,
                 ipv4,
@@ -147,14 +158,16 @@ impl<'j> Status<'j> {
                 country,
                 city,
                 hostname,
+                ..
             } => format!(
-                "<b>LOCKDOWN: {lockdown}</b>\n\n\
+                "{}\n\n\
                  Tunnel protocol: {tunnel_type}\n\
                  Tunnel interface: {tunnel_interface}\n\n\
                  IPv4: {}\n\
                  IPv6: {}\n\
                  Location: {city}, {country}\n\
                  Hostname: {hostname}",
+                self.tooltip_title(),
                 ipv4.unwrap_or("N/A"),
                 ipv6.unwrap_or("N/A")
             ),
