@@ -155,8 +155,8 @@ impl<'j> Status<'j> {
                  IPv6: {}\n\
                  Location: {city}, {country}\n\
                  Hostname: {hostname}",
-                ipv4.unwrap_or(""),
-                ipv6.unwrap_or("")
+                ipv4.unwrap_or("N/A"),
+                ipv6.unwrap_or("N/A")
             ),
         }
     }
