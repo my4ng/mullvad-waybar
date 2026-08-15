@@ -1,5 +1,7 @@
 use serde_json::{Value, json};
 
+use crate::cli::{Cli, Text};
+
 #[derive(Debug, Clone, Copy)]
 pub enum Status<'j> {
     Offline,
@@ -118,19 +120,48 @@ impl<'j> Status<'j> {
         classes
     }
 
-    fn text(&self) -> String {
-        match self {
-            Self::Offline | Self::Disconnected { .. } => String::new(),
-            Self::Connected { hostname, .. } => {
-                let mut parts = hostname.split('-');
-                let country_code = parts.next().unwrap_or("");
-                let city_code = parts.next().unwrap_or("");
-                format!(
-                    " {},{}",
-                    city_code.to_uppercase(),
-                    country_code.to_uppercase()
-                )
-            }
+    fn text(&self, cli: &Cli) -> String {
+        let mut text = match (self, cli.text) {
+            (Self::Offline, Text::State) => "OFFLINE".into(),
+            (Self::Disconnected { .. }, Text::State) => "DISCONN".into(),
+            (Self::Offline | Self::Disconnected { .. }, _) => "".into(),
+            (
+                Self::Connected {
+                    ipv4,
+                    ipv6,
+                    hostname,
+                    ..
+                },
+                text,
+            ) => match text {
+                Text::Location | Text::City | Text::Country => {
+                    let mut parts = hostname.split('-');
+                    let country_code = parts.next().unwrap_or("");
+                    let city_code = parts.next().unwrap_or("");
+                    match text {
+                        Text::Location => format!(
+                            "{},{}",
+                            city_code.to_uppercase(),
+                            country_code.to_uppercase()
+                        ),
+                        Text::City => city_code.to_uppercase(),
+                        Text::Country => country_code.to_uppercase(),
+                        _ => unreachable!(),
+                    }
+                }
+                Text::Hostname => (*hostname).into(),
+                Text::Ips => format!("{}/{}", (*ipv4).unwrap_or("N/A"), (*ipv6).unwrap_or("N/A")),
+                Text::Ipv4 => (*ipv4).unwrap_or("N/A").into(),
+                Text::Ipv6 => (*ipv6).unwrap_or("N/A").into(),
+                Text::State => "CONNECT".into(),
+            },
+        };
+
+        if text.is_empty() {
+            text
+        } else {
+            text.insert(0, ' ');
+            text
         }
     }
 
@@ -174,8 +205,8 @@ impl<'j> Status<'j> {
         }
     }
 
-    pub fn into_response_json(self) -> String {
-        let text = self.text();
+    pub fn into_response_json(self, cli: &Cli) -> String {
+        let text = self.text(cli);
         let alt = self.alt();
         let class = self.class();
         let tooltip = self.tooltip();

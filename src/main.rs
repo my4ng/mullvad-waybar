@@ -1,6 +1,5 @@
 use std::{
     io::{self, BufRead, BufReader, Write},
-    path::Path,
     process::{Command, Stdio},
 };
 
@@ -17,8 +16,7 @@ fn main() -> Result<()> {
 
     let cli = Cli::parse();
 
-    let binary_path = cli.binary.as_deref().unwrap_or(Path::new("mullvad"));
-    let mut child = Command::new(binary_path)
+    let mut child = Command::new(&cli.binary)
         .args(["status", "--json", "listen"])
         .stdout(Stdio::piped())
         .spawn()
@@ -41,7 +39,7 @@ fn main() -> Result<()> {
 
                 if let Some(status) = Status::from_status_json(&value) {
                     debug!("Parsed status: {status:#?}");
-                    let response = status.into_response_json();
+                    let response = status.into_response_json(&cli);
                     let mut stdout = io::stdout();
                     stdout.write_all(response.as_bytes())?;
                     stdout.write_all(b"\n")?;
