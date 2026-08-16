@@ -3,7 +3,7 @@ mullvad-waybar
 </h1>
 
 <p align="center">
-<img width="400" height="294" alt="image" src="https://github.com/user-attachments/assets/c896cbb4-2dd9-484f-b11c-7f95d7c55c10" />
+<img width="392" height="295" alt="image" src="https://github.com/user-attachments/assets/90124af6-881a-4a65-a29b-03029534501d" />
 </p>
 
 Simple yet configurable [waybar](https://github.com/alexays/waybar) custom module for Mullvad VPN.
@@ -35,9 +35,31 @@ sudo cp target/release/mullvad-waybar /usr/local/bin
 Usage: mullvad-waybar [OPTIONS]
 
 Options:
-  -b, --binary <BINARY>  Path to the Mullvad VPN binary
-  -h, --help             Print help
-  -V, --version          Print version
+  -b, --binary <BINARY>
+          Path to the Mullvad VPN binary
+
+          [default: mullvad]
+
+  -t, --text <TEXT>
+          What text to display in the bar
+
+          Possible values:
+          - location: Location in CITY,COUNTRY (e.g. SYD,AU)
+          - city:     City (e.g. SYD)
+          - country:  Country (e.g. AU)
+          - hostname: Hostname (e.g. au-syd-wg-001)
+          - ips:      IPv4/IPv6 addresses
+          - ipv4:     IPv4 address
+          - ipv6:     IPv6 address
+          - state:    State (offline/disconnected/connected)
+
+          [default: location]
+
+  -h, --help
+          Print help (see a summary with '-h')
+
+  -V, --version
+          Print version
 ```
 
 By default `mullvad-waybar` will use the `mullvad` binary found in `$PATH`. If a different one is required, use the `--binary` option.
