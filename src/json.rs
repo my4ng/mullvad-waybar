@@ -10,7 +10,6 @@ pub enum Status<'j> {
     },
     Connected {
         lockdown: bool,
-        tunnel_type: &'j str,
         tunnel_interface: &'j str,
         ipv4: Option<&'j str>,
         ipv6: Option<&'j str>,
@@ -33,6 +32,7 @@ impl<'j> Status<'j> {
                 {
                     Some(Self::Offline)
                 } else {
+                    // TODO: show error emoji and reason
                     None
                 }
             }
@@ -40,7 +40,6 @@ impl<'j> Status<'j> {
                 let details = json.get("details")?;
 
                 let endpoint = details.get("endpoint")?;
-                let tunnel_type = endpoint.get("tunnel_type").and_then(Value::as_str)?;
                 let tunnel_interface = endpoint.get("tunnel_interface").and_then(Value::as_str)?;
 
                 let location = details.get("location")?;
@@ -57,7 +56,6 @@ impl<'j> Status<'j> {
 
                 Some(Self::Connected {
                     lockdown,
-                    tunnel_type,
                     tunnel_interface,
                     ipv4,
                     ipv6,
@@ -182,7 +180,6 @@ impl<'j> Status<'j> {
         match self {
             Self::Offline | Self::Disconnected { .. } => self.tooltip_title().into(),
             Self::Connected {
-                tunnel_type,
                 tunnel_interface,
                 ipv4,
                 ipv6,
@@ -192,7 +189,6 @@ impl<'j> Status<'j> {
                 ..
             } => format!(
                 "{}\n\n\
-                 Tunnel protocol: {tunnel_type}\n\
                  Tunnel interface: {tunnel_interface}\n\n\
                  IPv4: {}\n\
                  IPv6: {}\n\
